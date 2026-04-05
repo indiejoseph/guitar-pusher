@@ -23,9 +23,11 @@ export const usePitchDetector = (sampleRate: number = 44100) => {
 
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({
         sampleRate,
-        sampleRatenst analyser = audioContext.createAnalyser();
+      });
+
+      const analyser = audioContext.createAnalyser();
       analyser.fftSize = 2048;
-      
+
       const source = audioContext.createMediaStreamSource(stream);
       source.connect(analyser);
 
@@ -36,12 +38,12 @@ export const usePitchDetector = (sampleRate: number = 44100) => {
       const input = new Float32Array(detector.inputLength);
 
       const updatePitch = () => {
-        if (!analyserRef.current) return;
-        analyserRef.current.getFloatTimeDomainData(input);
+        if (!analyser) return;
+        analyser.getFloatTimeDomainData(input);
         const [detectedPitch, detectedClarity] = detector.findPitch(input, audioContext.sampleRate);
 
-        setPitch(detectedPitch);
-        setClarity(detectedClarity);
+        setPitch(detectedPitch || null);
+        setClarity(detectedClarity ?? 0);
         animationFrameRef.current = requestAnimationFrame(updatePitch);
       };
 
