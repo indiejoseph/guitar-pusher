@@ -1,105 +1,314 @@
+import { HeadphonesIcon, Settings02Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { Button } from "./ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from './ui/dialog'
-import { Button } from './ui/button'
+	Dialog,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "./ui/dialog";
+import {
+	Field,
+	FieldContent,
+	FieldDescription,
+	FieldGroup,
+	FieldLabel,
+} from "./ui/field";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "./ui/select";
+import { Slider } from "./ui/slider";
+import { Switch } from "./ui/switch";
 
 type Props = {
-  open: boolean
-  onClose: () => void
-  keyRoot: string
-  setKeyRoot: (k: string) => void
-  timeSignature: string
-  setTimeSignature: (t: string) => void
-  tempo: number
-  setTempo: (n: number) => void
-  metronomeEnabled: boolean
-  setMetronomeEnabled: (b: boolean) => void
-}
+	open: boolean;
+	onClose: () => void;
+	keyRoot: string;
+	setKeyRoot: (k: string) => void;
+	keyMode: "major" | "minor";
+	setKeyMode: (m: "major" | "minor") => void;
+	timeSignature: string;
+	setTimeSignature: (t: string) => void;
+	tempo: number;
+	setTempo: (n: number) => void;
+	backingTrackEnabled: boolean;
+	setBackingTrackEnabled: (b: boolean) => void;
+	drumsEnabled: boolean;
+	setDrumsEnabled: (b: boolean) => void;
+	bassEnabled: boolean;
+	setBassEnabled: (b: boolean) => void;
+	harmonyEnabled: boolean;
+	setHarmonyEnabled: (b: boolean) => void;
+	metronomeEnabled: boolean;
+	setMetronomeEnabled: (b: boolean) => void;
+	countInEnabled: boolean;
+	setCountInEnabled: (b: boolean) => void;
+	autoAdvanceEnabled: boolean;
+	setAutoAdvanceEnabled: (b: boolean) => void;
+};
 
-const KEYS = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B']
-const TIME_SIGNATURES = ['4/4','3/4','6/8','5/4','7/8','16/8']
+const KEYS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const KEY_MODES: Array<{ label: string; value: "major" | "minor" }> = [
+	{ label: "Major", value: "major" },
+	{ label: "Minor", value: "minor" },
+];
+const TIME_SIGNATURES = ["4/4", "3/4", "5/4", "12/8"];
 
 export default function Settings({
-  open,
-  onClose,
-  keyRoot,
-  setKeyRoot,
-  timeSignature,
-  setTimeSignature,
-  tempo,
-  setTempo,
-  metronomeEnabled,
-  setMetronomeEnabled,
+	open,
+	onClose,
+	keyRoot,
+	setKeyRoot,
+	keyMode,
+	setKeyMode,
+	timeSignature,
+	setTimeSignature,
+	tempo,
+	setTempo,
+	backingTrackEnabled,
+	setBackingTrackEnabled,
+	drumsEnabled,
+	setDrumsEnabled,
+	bassEnabled,
+	setBassEnabled,
+	harmonyEnabled,
+	setHarmonyEnabled,
+	metronomeEnabled,
+	setMetronomeEnabled,
+	countInEnabled,
+	setCountInEnabled,
+	autoAdvanceEnabled,
+	setAutoAdvanceEnabled,
 }: Props) {
-  return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose() }}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Settings</DialogTitle>
-        </DialogHeader>
+	return (
+		<Dialog
+			open={open}
+			onOpenChange={(v) => {
+				if (!v) onClose();
+			}}
+		>
+			<DialogContent className="sm:max-w-md">
+				<DialogHeader>
+					<DialogTitle className="flex items-center gap-2">
+						<HugeiconsIcon icon={Settings02Icon} size={20} strokeWidth={2} />
+						Session Settings
+					</DialogTitle>
+				</DialogHeader>
 
-        <div className="mt-4 space-y-4">
-          <div>
-            <label className="block text-sm font-medium">Key</label>
-            <select
-              value={keyRoot}
-              onChange={(e) => setKeyRoot(e.target.value)}
-              className="block w-full px-3 py-2 mt-1 rounded border-input bg-background"
-            >
-              {KEYS.map((k) => (
-                <option key={k} value={k}>{k}</option>
-              ))}
-            </select>
-          </div>
+				<FieldGroup className="mt-4">
+					<div className="grid grid-cols-3 gap-4">
+						<Field>
+							<FieldLabel>Root Key</FieldLabel>
+							<Select
+								value={keyRoot}
+								onValueChange={(val) => val && setKeyRoot(val)}
+							>
+								<SelectTrigger className="w-full">
+									<SelectValue placeholder="Select key" />
+								</SelectTrigger>
+								<SelectContent>
+									{KEYS.map((k) => (
+										<SelectItem key={k} value={k}>
+											{k}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</Field>
 
-          <div>
-            <label className="block text-sm font-medium">Time signature</label>
-            <select
-              value={timeSignature}
-              onChange={(e) => setTimeSignature(e.target.value)}
-              className="block w-full px-3 py-2 mt-1 rounded border-input bg-background"
-            >
-              {TIME_SIGNATURES.map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
-          </div>
+						<Field>
+							<FieldLabel>Mode</FieldLabel>
+							<Select
+								value={keyMode}
+								onValueChange={(val) => {
+									if (val === "major" || val === "minor") {
+										setKeyMode(val);
+									}
+								}}
+							>
+								<SelectTrigger className="w-full">
+									<SelectValue placeholder="Select mode" />
+								</SelectTrigger>
+								<SelectContent>
+									{KEY_MODES.map((m) => (
+										<SelectItem key={m.value} value={m.value}>
+											{m.label}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</Field>
 
-          <div>
-            <label className="block text-sm font-medium">Tempo (BPM)</label>
-            <div className="flex items-center gap-3 mt-1">
-              <input
-                type="range"
-                min={50}
-                max={220}
-                value={tempo}
-                onChange={(e) => setTempo(Number(e.target.value))}
-                className="flex-1"
-              />
-              <div className="w-16 text-right">{tempo}</div>
-            </div>
-          </div>
+						<Field>
+							<FieldLabel>Time Signature</FieldLabel>
+							<Select
+								value={timeSignature}
+								onValueChange={(val) => val && setTimeSignature(val)}
+							>
+								<SelectTrigger className="w-full">
+									<SelectValue placeholder="Select time" />
+								</SelectTrigger>
+								<SelectContent>
+									{TIME_SIGNATURES.map((t) => (
+										<SelectItem key={t} value={t}>
+											{t}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</Field>
+					</div>
 
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm font-medium">Metronome</div>
-              <div className="text-sm text-muted-foreground">Play a click at the selected tempo</div>
-            </div>
-            <label className="inline-flex items-center">
-              <input type="checkbox" checked={metronomeEnabled} onChange={(e) => setMetronomeEnabled(e.target.checked)} className="mr-2" />
-              <span>{metronomeEnabled ? 'On' : 'Off'}</span>
-            </label>
-          </div>
-        </div>
+					<Field>
+						<div className="flex flex-row items-center justify-between">
+							<FieldLabel>Tempo (BPM)</FieldLabel>
+							<span className="text-sm font-bold tabular-nums">{tempo}</span>
+						</div>
+						<Slider
+							value={[tempo]}
+							onValueChange={(vals) => {
+								if (Array.isArray(vals)) {
+									setTempo(vals[0]);
+								}
+							}}
+							min={40}
+							max={240}
+							step={1}
+						/>
+					</Field>
 
-        <DialogFooter>
-          <Button onClick={onClose} variant="default">Close</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
+					<Field
+						orientation="horizontal"
+						className="items-center justify-between"
+					>
+						<FieldContent>
+							<FieldLabel>Metronome</FieldLabel>
+							<FieldDescription>Click on every beat</FieldDescription>
+						</FieldContent>
+						<Switch
+							checked={metronomeEnabled}
+							onCheckedChange={setMetronomeEnabled}
+						/>
+					</Field>
+
+					<Field
+						orientation="horizontal"
+						className="items-center justify-between"
+					>
+						<FieldContent>
+							<FieldLabel>Count-In</FieldLabel>
+							<FieldDescription>Click one bar before starting</FieldDescription>
+						</FieldContent>
+						<Switch
+							checked={countInEnabled}
+							onCheckedChange={setCountInEnabled}
+						/>
+					</Field>
+
+					<Field
+						orientation="horizontal"
+						className="items-center justify-between"
+					>
+						<FieldContent>
+							<FieldLabel>Auto-Advance</FieldLabel>
+							<FieldDescription>
+								Advance chords at bar boundaries
+							</FieldDescription>
+						</FieldContent>
+						<Switch
+							checked={autoAdvanceEnabled}
+							onCheckedChange={setAutoAdvanceEnabled}
+						/>
+					</Field>
+
+					<Field
+						orientation="horizontal"
+						className="items-center justify-between"
+					>
+						<FieldContent>
+							<FieldLabel>Backing Track</FieldLabel>
+							<FieldDescription>Drums, bass, and harmony</FieldDescription>
+						</FieldContent>
+						<Switch
+							checked={backingTrackEnabled}
+							onCheckedChange={setBackingTrackEnabled}
+						/>
+					</Field>
+
+					<Field
+						orientation="horizontal"
+						className="items-center justify-between"
+					>
+						<FieldContent>
+							<FieldLabel>Drums</FieldLabel>
+							<FieldDescription>Kick, snare, and hi-hat</FieldDescription>
+						</FieldContent>
+						<Switch
+							checked={drumsEnabled}
+							onCheckedChange={setDrumsEnabled}
+							disabled={!backingTrackEnabled}
+						/>
+					</Field>
+
+					<Field
+						orientation="horizontal"
+						className="items-center justify-between"
+					>
+						<FieldContent>
+							<FieldLabel>Bass</FieldLabel>
+							<FieldDescription>Root note groove</FieldDescription>
+						</FieldContent>
+						<Switch
+							checked={bassEnabled}
+							onCheckedChange={setBassEnabled}
+							disabled={!backingTrackEnabled}
+						/>
+					</Field>
+
+					<Field
+						orientation="horizontal"
+						className="items-center justify-between"
+					>
+						<FieldContent>
+							<FieldLabel>Harmony</FieldLabel>
+							<FieldDescription>Chord pad layer</FieldDescription>
+						</FieldContent>
+						<Switch
+							checked={harmonyEnabled}
+							onCheckedChange={setHarmonyEnabled}
+							disabled={!backingTrackEnabled}
+						/>
+					</Field>
+
+					{backingTrackEnabled && (
+						<Alert className="bg-amber-50 border-amber-200/50 text-amber-600">
+							<HugeiconsIcon
+								icon={HeadphonesIcon}
+								className="size-4 text-amber-600"
+							/>
+							<AlertTitle className="text-amber-800">
+								Headphones Recommended
+							</AlertTitle>
+							<AlertDescription className="text-amber-700/80">
+								Using headphones prevents the backing track from interfering
+								with pitch detection.
+							</AlertDescription>
+						</Alert>
+					)}
+				</FieldGroup>
+
+				<DialogFooter>
+					<Button onClick={onClose} className="w-full sm:w-auto">
+						Done
+					</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
+	);
 }

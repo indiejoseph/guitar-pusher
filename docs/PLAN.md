@@ -20,6 +20,14 @@ This is the complete, multi-stage roadmap to build your "AI Guitar Trainer." We 
     * **Confirmation:** The note must be "stable" for **100ms** to trigger a "hit."
 * **Live Scoring:** Create a "Progress Ring" that fills up as the user plays correct chord tones. Once it hits **50% of the bar's duration**, move to the next chord.
 
+### 3. Backing Track Engine
+* **Audio Stack:** `Tone.js`. Essential for rock-solid timing and browser-based synthesis.
+* **Dynamic Generation:**
+    * **Drums (MIDI):** Uses pre-recorded MIDI files for different time signatures (e.g., `4-4-standard.mid`, `3-4-waltz.mid`). This ensures a "human" feel and professional grooves.
+    * **Bass (Procedural):** A steady bass line that follows the **Root** of the active chord using a defined rhythm pattern (e.g., 1 and 3, or a walking 8th-note line).
+    * **Harmony (Procedural):** A synth "Strum" or "Pad" that plays the full target chord notes, helping the user "hear" the resolution.
+* **Synchronization:** The backing track is slave to the **State Machine**. When the `nextChord()` trigger fires, the Bass and Harmony patterns update in real-time, while the Drum MIDI loop continues to provide the pulse.
+
 ---
 
 ## 🤖 Phase 2: The AI Analysis (Spotify Basic Pitch)
@@ -61,14 +69,29 @@ This is the complete, multi-stage roadmap to build your "AI Guitar Trainer." We 
 
 1.  **[ ] Setup React:** Create the UI with a large "Current Chord" display and a metronome.
 2.  **[ ] Web Audio Hook:** Write a custom hook `usePitchDetector` that requests mic access and logs frequencies to the console.
-3.  **[ ] Target Matching:** Map frequencies to musical notes (e.g., 440Hz = A).
-4.  **[ ] Scoring Engine:** Implement the **50% Duration** rule. If the user plays the correct note for 2 out of 4 beats, trigger `nextChord()`.
-5.  **[ ] Basic Pitch Module:** Add a "Record" button. After playing, show the user exactly which notes the AI detected.
-6.  **[ ] Capacitor Build:** Run `npx cap open ios` and test it on a real device.
+3.  **[ ] Tone.js Integration:** Install `tone` and setup the `Transport`. Create basic Drum, Bass, and Synth instruments.
+4.  **[ ] Backing Track Engine:** Write a manager that plays the current chord's root on bass and harmony on the synth, synchronized with the beat.
+5.  **[ ] Target Matching:** Map frequencies to musical notes (e.g., 440Hz = A).
+6.  **[ ] Scoring Engine:** Implement the **50% Duration** rule. If the user plays the correct note for 2 out of 4 beats, trigger `nextChord()`.
+7.  **[ ] Basic Pitch Module:** Add a "Record" button. After playing, show the user exactly which notes the AI detected.
+8.  **[ ] Capacitor Build:** Run `npx cap open ios` and test it on a real device.
 
 
 
 ### Pro-Tip for 2026:
 When using `getUserMedia`, set `echoCancellation: false`. Modern phones try to "clean up" audio for calls, which actually destroys the frequencies needed for guitar pitch detection. Disabling this is the #1 way to make your app feel professional.
 
-**Ready to start? I can provide the `usePitchDetector` hook code if you want to begin with the audio logic.**
+**Ready to start? I can provide the `usePitchDetector` hook code or help you set up the initial Tone.js instruments.**
+
+
+## Back Track Synthesis
+
+4 / 4 time signature:
+- **Drums:** Kick on 1, 3 and 3 upbeat, Snare on 2 and 4, Hi-Hat on every 8th note.
+- **Bass:** Root note on 1, 3 and 3 upbeat.
+- **Harmony:** Full chord strum on 1 and 3.
+
+3 / 4 time signature:
+- **Drums:** Kick on 1, Snare on 2, Hi-Hat on every 8th note.
+- **Bass:** Root note on 1.
+- **Harmony:** Full chord strum on 1.

@@ -1,73 +1,133 @@
-# React + TypeScript + Vite
+# Guitar Pusher
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Guitar Pusher is a guitar practice app that helps you train chord progression changes with real-time pitch detection, visual feedback, and an optional backing track.
 
-Currently, two official plugins are available:
+## What It Does
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Detects live pitch from microphone input using pitchy
+- Matches detected notes against the current target chord
+- Shows progression feedback with chord display, progress ring, and sequence preview
+- Supports practice controls for key, mode, tempo, and time signature
+- Includes backing track layers (drums, bass, harmony) and metronome/count-in
+- Provides an auto-advance mode to move chords at bar boundaries when needed
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 19 + TypeScript
+- Vite 8
+- Tailwind CSS 4 + shadcn/base-ui components
+- Tone.js for transport, scheduling, and backing track synthesis
+- pitchy for low-latency monophonic pitch detection
+- Cloudflare Workers + Wrangler for deployment
 
-## Expanding the ESLint configuration
+## Audio Pipeline Notes
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Microphone capture in the pitch hook explicitly disables browser processing that harms guitar frequency detection:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- echoCancellation: false
+- noiseSuppression: false
+- autoGainControl: false
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+The app also applies a high-pass filter around 80 Hz before analysis to reduce low-end rumble and improve note tracking reliability.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Core Project Structure
+
+```text
+src/
+  App.tsx
+  index.css
+  components/
+    ChordDisplay.tsx
+    ProgressRing.tsx
+    DetectionStats.tsx
+    NextChordPreview.tsx
+    Settings.tsx
+    ui/
+  hooks/
+    usePitchDetector.ts
+    useBackingTrack.ts
+  utils/
+    frequencyToNote.ts
+worker/
+  index.ts
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Getting Started
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Prerequisites
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Bun >= 1.2.2
+- Node.js >= 22
+
+### Install
+
+```bash
+bun install
 ```
+
+### Run Locally
+
+```bash
+bun run dev
+```
+
+### Build
+
+```bash
+bun run build
+```
+
+### Preview Production Build
+
+```bash
+bun run preview
+```
+
+## Available Scripts
+
+- bun run dev: Start Vite dev server
+- bun run build: Type-check and build production assets to dist
+- bun run preview: Serve built app locally
+- bun run lint: Run ESLint
+- bun run cf:dev: Build and run local Wrangler worker preview
+- bun run cf:deploy: Build and deploy to Cloudflare Workers
+
+## Deploy To Cloudflare Workers
+
+This repository is configured to deploy static Vite output through a Worker with SPA fallback.
+
+1. Authenticate Wrangler
+
+```bash
+bunx wrangler login
+```
+
+2. Deploy
+
+```bash
+bun run cf:deploy
+```
+
+3. Local Worker Preview
+
+```bash
+bun run cf:dev
+```
+
+Config files involved:
+
+- wrangler.toml
+- worker/index.ts
+
+## Troubleshooting
+
+- No pitch detected:
+  - Verify mic permissions are granted
+  - Use headphones when backing track is enabled
+  - Confirm your input signal is above the gating threshold
+- App does not advance chords while practicing:
+  - Enable Auto-Advance in session settings for bar-based progression
+- Audio sounds delayed or unstable:
+  - Close other audio-intensive tabs/apps
+  - Retry with lower system load and stable device audio settings
+
