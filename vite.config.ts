@@ -7,7 +7,7 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-	base: "/guitar-pusher/",
+	base: "/",
 	plugins: [react(), tailwindcss()],
 	resolve: {
 		alias: {
