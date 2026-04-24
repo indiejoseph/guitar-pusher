@@ -171,10 +171,9 @@ export default function Settings({
 							</div>
 							<Slider
 								value={[tempo]}
-								onValueChange={(vals) => {
-									if (Array.isArray(vals)) {
-										setTempo(vals[0]);
-									}
+								onValueChange={(values) => {
+									const val = Array.isArray(values) ? values[0] : values;
+									setTempo(val as number);
 								}}
 								min={40}
 								max={240}
