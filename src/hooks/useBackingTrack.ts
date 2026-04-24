@@ -180,7 +180,7 @@ export const useBackingTrack = ({
 
 			// --- METRONOME: click on every main beat ---
 			if (metronomeRef.current && currentStep % stepsPerBeat === 0) {
-				metronomeSynthRef.current?.start();
+				metronomeSynthRef.current?.start(time);
 			}
 
 			// --- HI-HAT: Trigger every step ---

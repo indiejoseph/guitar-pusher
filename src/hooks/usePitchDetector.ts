@@ -1,16 +1,18 @@
 import { PitchDetector } from "pitchy";
 import { useCallback, useEffect, useRef, useState } from "react";
+import * as Tone from "tone";
 
-export const usePitchDetector = (sampleRate: number = 44100) => {
+export const usePitchDetector = () => {
 	const [pitch, setPitch] = useState<number | null>(null);
 	const [clarity, setClarity] = useState<number>(0);
 	const [volume, setVolume] = useState<number>(-Infinity);
 	const [isRecording, setIsRecording] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
-	const audioContextRef = useRef<AudioContext | null>(null);
 	const analyserRef = useRef<AnalyserNode | null>(null);
 	const animationFrameRef = useRef<number | null>(null);
+	const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
+	const streamRef = useRef<MediaStream | null>(null);
 
 	const startRecording = useCallback(async () => {
 		try {
@@ -22,13 +24,9 @@ export const usePitchDetector = (sampleRate: number = 44100) => {
 				},
 			});
 
-			const AudioContextClass: typeof AudioContext =
-				window.AudioContext ||
-				(window as unknown as { webkitAudioContext: typeof AudioContext })
-					.webkitAudioContext;
-			const audioContext = new AudioContextClass({
-				sampleRate,
-			});
+			// Reuse Tone's AudioContext — creating a second AudioContext on mobile
+			// suspends the first one (Tone's), which silences all backing track output.
+			const audioContext = Tone.getContext().rawContext as AudioContext;
 			if (audioContext.state !== "running") {
 				await audioContext.resume();
 			}
@@ -36,19 +34,19 @@ export const usePitchDetector = (sampleRate: number = 44100) => {
 			const analyser = audioContext.createAnalyser();
 			analyser.fftSize = 2048;
 
-			// Add a High-Pass Filter to remove low-end rumble (kick drums, bass)
-			// that interferes with pitch detection.
+			// High-pass filter to remove low-end rumble that interferes with pitch detection.
 			const filter = audioContext.createBiquadFilter();
 			filter.type = "highpass";
 			filter.frequency.value = 80; // Guitar's low E is ~82Hz
 
 			const source = audioContext.createMediaStreamSource(stream);
 
-			// Connect: Source -> Filter -> Analyser
+			// Connect: Source -> Filter -> Analyser (not to destination — mic stays silent)
 			source.connect(filter);
 			filter.connect(analyser);
 
-			audioContextRef.current = audioContext;
+			sourceRef.current = source;
+			streamRef.current = stream;
 			analyserRef.current = analyser;
 
 			const detector = PitchDetector.forFloat32Array(analyser.fftSize);
@@ -92,15 +90,20 @@ export const usePitchDetector = (sampleRate: number = 44100) => {
 			);
 			setIsRecording(false);
 		}
-	}, [sampleRate]);
+	}, []);
 
 	const stopRecording = useCallback(() => {
 		if (animationFrameRef.current) {
 			cancelAnimationFrame(animationFrameRef.current);
+			animationFrameRef.current = null;
 		}
-		if (audioContextRef.current) {
-			audioContextRef.current.close();
-		}
+		// Disconnect mic from the shared Tone context (do NOT close it)
+		sourceRef.current?.disconnect();
+		sourceRef.current = null;
+		// Stop all mic tracks so the browser indicator light turns off
+		for (const t of streamRef.current?.getTracks() ?? []) t.stop();
+		streamRef.current = null;
+		analyserRef.current = null;
 		setIsRecording(false);
 		setPitch(null);
 		setClarity(0);

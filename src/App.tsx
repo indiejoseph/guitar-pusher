@@ -373,8 +373,7 @@ function App() {
 	const [harmonyEnabled, setHarmonyEnabled] = useState(true);
 	const [metronomeEnabled, setMetronomeEnabled] = useState(false);
 	const [countInEnabled, setCountInEnabled] = useState(true);
-	const [noteDetectionEnabled, setNoteDetectionEnabled] = useState(true);
-	const [autoAdvanceEnabled, setAutoAdvanceEnabled] = useState(false);
+	const [noteDetectionEnabled, setNoteDetectionEnabled] = useState(false);
 	const [detectionTipsOpen, setDetectionTipsOpen] = useState(false);
 	const [detectionTipsCheckbox, setDetectionTipsCheckbox] = useState(false);
 	const [skipDetectionTips, setSkipDetectionTips] = useState(() => {
@@ -468,7 +467,7 @@ function App() {
 			setBeatProgress(elapsedInBar / beatDurationMs);
 
 			// Auto-advance mode: schedule advance at each bar boundary
-			if (autoAdvanceEnabled && advanceAtRef.current === 0) {
+			if (advanceAtRef.current === 0) {
 				const elapsedMs = now - chordStartRef.current;
 				const currentBarNum = Math.floor(elapsedMs / barDurationMs);
 				advanceAtRef.current =
@@ -496,8 +495,7 @@ function App() {
 					if (
 						clamped >= 0.6 &&
 						!readyToAdvanceRef.current &&
-						advanceAtRef.current === 0 &&
-						!autoAdvanceEnabled
+						advanceAtRef.current === 0
 					) {
 						if (backingTrackActiveRef.current) {
 							// Tone.js will call advanceSequence on its own next downbeat — perfectly aligned.
@@ -532,7 +530,6 @@ function App() {
 		countIn,
 		advanceSequence,
 		noteDetectionEnabled,
-		autoAdvanceEnabled,
 	]);
 
 	const handleKeyRootChange = (nextKeyRoot: string) => {
@@ -724,13 +721,13 @@ function App() {
 							disabled={isRecording}
 							size="icon-lg"
 							aria-label="Randomize chord sequence"
-							className="size-12 rounded-full cursor-pointer transition-colors bg-zinc-800 text-zinc-500 hover:bg-zinc-700"
+							className="transition-colors rounded-full cursor-pointer size-12 bg-zinc-800 text-zinc-500 hover:bg-zinc-700"
 						>
 							<Dices className="size-5" />
 						</Button>
 					</div>
 
-					{isDev && isRecording && (
+					{isDev && isRecording && noteDetectionEnabled && (
 						<div className="w-full max-w-xl pt-6 border-t border-zinc-800">
 							<DetectionStats
 								pitch={pitch}
@@ -834,8 +831,6 @@ function App() {
 				setMetronomeEnabled={setMetronomeEnabled}
 				countInEnabled={countInEnabled}
 				setCountInEnabled={setCountInEnabled}
-				autoAdvanceEnabled={autoAdvanceEnabled}
-				setAutoAdvanceEnabled={setAutoAdvanceEnabled}
 			/>
 		</div>
 	);
